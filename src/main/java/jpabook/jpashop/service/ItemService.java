@@ -22,7 +22,7 @@ public class ItemService {
         itemRepository.save(item);
     }
 
-    public List<Item> findMembers(){
+    public List<Item> findItems(){
         return itemRepository.findAll();
     }
 
