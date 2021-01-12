@@ -24,6 +24,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.hibernate.annotations.BatchSize;
+
 @Entity
 @Table(name = "orders")
 @Getter @Setter
@@ -43,6 +45,7 @@ public class Order {
 
     // 모든 엔티티는 저장희망 시 persist를 각각 호출해야 하지만 cascade 설정 시 order 만 하면 전파됨.
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @BatchSize(size = 100)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     private LocalDateTime orderDate; // 주문 시간
@@ -80,7 +83,7 @@ public class Order {
      * 주문 취소
      */
     public void cancel(){
-        if(delivery.getDeliveryStatus().isComp()){
+        if(delivery.getDeliveryStatus() == DeliveryStatus.COMP){
             throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
         }
         this.setStatus(OrderStatus.CANCEL);

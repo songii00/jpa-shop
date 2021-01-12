@@ -20,8 +20,10 @@ import org.springframework.util.StringUtils;
 
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
-import jpabook.jpashop.domain.item.Item;
 
+/**
+ * repository 는 순수 entity를 조회하는데 사용
+ */
 @Repository
 @RequiredArgsConstructor
 public class OrderRepository {
@@ -115,5 +117,36 @@ public class OrderRepository {
         cq.where(cb.and(criteria.toArray(new Predicate[criteria.size()])));
         TypedQuery<Order> query = em.createQuery(cq).setMaxResults(1000); //최대 1000건
         return query.getResultList();
+    }
+
+    public List<Order> findAllWithMemberDelivery() {
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class
+        ).getResultList();
+    }
+
+    // 컬렉션 패치 조인 (일대다)
+    // 컬렉션 패치 조인은 1개만 사용. 컬렉션 둘 이상에 패치조인을 사용하면 데이터 정합성이 틀어질 수 있음.
+    public List<Order> findAllWithItem() {
+        return em.createQuery(
+                "select distinct o from Order o" +
+                        " join fetch o.member m" + // XToOne 관계는 row 수를 증가시키지 않으니 fetch 조인 사용 가능
+                        " join fetch  o.delivery d" +
+                        " join fetch o.orderItems oi" + // 컬렌션은 지연로딩을 조회 해야함...
+                        " join fetch oi.item i", Order.class
+        )//.setFirstResult(1).setMaxResults(100) 일대다 fetch join 에서 hibernate가 경고를 내고 메모리에 다 들고온다음 페이징함
+                 .getResultList();
+    }
+
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        return em.createQuery(
+                "select o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d", Order.class
+                ).setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
     }
 }

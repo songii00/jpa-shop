@@ -15,7 +15,7 @@ spring:
       hibernate:
 #        show_sql: true
         format_sql: true
-
+        default_batch_fetch_size: 100 # in Query의 수 # 100 ~ maximum 1000개
 
 logging:
   level:
