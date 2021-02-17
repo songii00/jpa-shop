@@ -19,12 +19,16 @@ import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderStatus;
 import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.repository.OrderSearch;
+import jpabook.jpashop.repository.order.query.OrderFlatDto;
+import jpabook.jpashop.repository.order.query.OrderQueryDto;
+import jpabook.jpashop.repository.order.query.OrderQueryRepository;
 
 @RestController
 @RequiredArgsConstructor
 public class OrderApiController {
 
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
     @GetMapping("/api/v2/orders")
     public List<OrderDto> ordersV2(){
@@ -40,11 +44,39 @@ public class OrderApiController {
 
     @GetMapping("/api/v3.1/orders")
     public List<OrderDto> ordersV3_page(@RequestParam(value = "offset", defaultValue = "0") int offset,
-                                        @RequestParam(value = "limit", defaultValue = "0") int limit){
-        List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit); // toOne 관계는 페이징에 영향을 주지 않으니 한방쿼리로 가져옴
+                                        @RequestParam(value = "limit", defaultValue = "100") int limit){
+        // toOne 관계는 페이징에 영향을 주지 않으니 한방쿼리로 가져옴(패치조인)
+        List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
         // default_batch_fetch_size 를 이용해서 in query 로 조회
         return orders.stream().map(OrderDto::new).collect(toList());
     }
+
+    // 쿼리 N+1
+    @GetMapping("/api/v4/orders")
+    public List<OrderQueryDto> ordersV4(@RequestParam(value = "offset", defaultValue = "0") int offset,
+                                        @RequestParam(value = "limit", defaultValue = "100") int limit){
+
+        return orderQueryRepository.findOrderQueryDtos();
+    }
+
+
+    // 쿼리 2방
+    @GetMapping("/api/v5/orders")
+    public List<OrderQueryDto> ordersV5(@RequestParam(value = "offset", defaultValue = "0") int offset,
+                                        @RequestParam(value = "limit", defaultValue = "100") int limit){
+
+        return orderQueryRepository.findAllByDto_optimization();
+    }
+
+    // 쿼리 2방
+    @GetMapping("/api/v6/orders")
+    public List<OrderFlatDto> ordersV6(@RequestParam(value = "offset", defaultValue = "0") int offset,
+                                       @RequestParam(value = "limit", defaultValue = "100") int limit){
+
+        return orderQueryRepository.findAllByDto_flat();
+    }
+
+
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------
     // -- static class

@@ -136,7 +136,7 @@ public class OrderRepository {
                         " join fetch  o.delivery d" +
                         " join fetch o.orderItems oi" + // 컬렌션은 지연로딩을 조회 해야함...
                         " join fetch oi.item i", Order.class
-        )//.setFirstResult(1).setMaxResults(100) 일대다 fetch join 에서 hibernate가 경고를 내고 메모리에 다 들고온다음 페이징함
+        )//.setFirstResult(1).setMaxResults(100)// 일대다 fetch join 에서 hibernate가 경고를 내고 메모리에 다 들고온다음 페이징함
                  .getResultList();
     }
 
